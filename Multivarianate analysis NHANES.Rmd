@@ -1,0 +1,339 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Statistical Analysis
+
+## Packages 
+
+```{r}
+options(scipen = 999) ##notacion cientifica apagada
+rm(list=ls())
+#install.packages("tidyverse")
+library(tidyverse)
+#install.packages("skimr")
+library(skimr)
+#install.packages("here")
+library(here)
+```
+
+## Dataset
+
+```{r}
+data <- read_csv("DATA_Final.csv")
+dim(data)
+head(data)
+
+skim(data) # Análisis descriptivo de todas las variables.
+```
+
+## Distribution
+
+```{r}
+# Fluoride
+summary(data$LBDPFL)
+hist(data$LBDPFL, breaks=15)
+hist(log(data$LBDPFL), breaks=15)
+
+# Lead
+summary(data$LBXBPB)
+hist(data$LBXBPB, breaks=15)
+hist(log(data$LBXBPB), breaks=15)
+
+# Manganese
+summary(data$LBXBMN)
+hist(data$LBXBMN, breaks=15)
+hist(log(data$LBXBMN), breaks=15)
+
+# Selenium
+summary(data$LBXBSE)
+hist(data$LBXBSE, breaks=15)
+hist(log(data$LBXBSE), breaks=15)
+```
+
+## Exposure variables
+
+```{r, results='hide', message=FALSE}
+data$ln_LBDPFL <- log(data$LBDPFL)
+data$ln_LBXBMN <- log(data$LBXBMN)
+data$ln_LBXBPB <- log(data$LBXBPB)
+data$ln_LBXBSE <- log(data$LBXBSE)
+data$ln_LBXTHG <- log(data$LBXTHG)
+
+data$iqrFl <- data$ln_LBDPFL/IQR(data$ln_LBDPFL)
+data$iqrMn <- data$ln_LBXBMN/IQR(data$ln_LBXBMN)
+data$iqrPb <- data$ln_LBXBPB/IQR(data$ln_LBXBPB)
+data$iqrSe <- data$ln_LBXBSE/IQR(data$ln_LBXBSE)
+data$iqrHg <- data$ln_LBXTHG/IQR(data$ln_LBXTHG)
+```
+
+## Confounding factors
+```{r, results='hide', message=FALSE}
+data$calories <- as.numeric(data$DR1TKCAL)
+data$INDFMPIR_ts <- factor(data$INDFMPIR_ts_low.high, levels = c("low","high"), labels = c(0,1))
+data$sex <- factor(data$RIAGENDR, levels = c(1,2), labels = c(0,1))
+data$age <- as.numeric(data$RIDAGEYR)
+data$race <- as.factor(data$RIDRETH3.ts)
+data$smoke <- as.factor(data$SMD460.ts)
+data$activityscore
+data$sch_activityscore
+```
+
+## Fluoride (F)
+
+### BMI - *Body Mass Index*
+```{r, results='hide', message=FALSE}
+Multiple_BMXBMI <- lm(data$BMXBMI ~  (data$iqrFl) + 
+                        (data$iqrMn) +
+                        (data$iqrPb) +
+                        (data$iqrSe) + 
+                        (data$iqrHg) + 
+                        data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXBMI)
+round(confint(Multiple_BMXBMI), 2)
+```
+
+### Standing height
+```{r, results='hide', message=FALSE}
+Multiple_BMXHT <- lm(data$BMXHT ~  (data$iqrFl) + 
+                       (data$iqrMn) +
+                       (data$iqrPb) +
+                       (data$iqrSe) + 
+                       (data$iqrHg) +
+                       data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXHT)
+round(confint(Multiple_BMXHT),2)
+```
+
+### Waist circumference
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXWAIST <- lm(data$BMXWAIST ~  (data$iqrFl) + 
+                          (data$iqrMn) +
+                          (data$iqrPb) +
+                          (data$iqrSe) + 
+                          (data$iqrHg) +
+                          data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXWAIST)
+round(confint(Multiple_BMXWAIST), 2)
+```
+
+### Upper arm length
+```{r, results='hide', message=FALSE}
+Multiple_BMXARML <- lm(data$BMXARML ~  (data$iqrFl) + 
+                         (data$iqrMn) +
+                         (data$iqrPb) +
+                         (data$iqrSe) + 
+                         (data$iqrHg) +
+                         data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXARML)
+round(confint(Multiple_BMXARML), 2)
+```
+
+## Lead (Pb)
+
+### Body Mass Index
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXBMI <- lm(data$BMXBMI ~  (data$iqrPb) + 
+                        (data$iqrMn) +
+                        (data$iqrFl) +
+                        (data$iqrSe) + 
+                        (data$iqrHg) + 
+                        data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXBMI)
+round(confint(Multiple_BMXBMI), 2)
+```
+
+### Standing height
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXHT <- lm(data$BMXHT ~  (data$iqrPb) + 
+                       (data$iqrMn) +
+                       (data$iqrFl) +
+                       (data$iqrSe) + 
+                       (data$iqrHg) +
+                       data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXHT)
+round(confint(Multiple_BMXHT),2)
+```
+
+### Waist circumference
+```{r, results='hide', message=FALSE}
+Multiple_BMXWAIST <- lm(data$BMXWAIST ~  (data$iqrPb) + 
+                          (data$iqrMn) +
+                          (data$iqrFl) +
+                          (data$iqrSe) + 
+                          (data$iqrHg) +
+                          data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXWAIST)
+round(confint(Multiple_BMXWAIST), 2)
+```
+
+### Upper arm length
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXARML <- lm(data$BMXARML ~  (data$iqrPb) + 
+                         (data$iqrMn) +
+                         (data$iqrFl) +
+                         (data$iqrSe) + 
+                         (data$iqrHg) +
+                         data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXARML)
+round(confint(Multiple_BMXARML), 2)
+```
+
+## Manganese (Mn)
+
+### Body Mass Index
+```{r, results='hide', message=FALSE}
+Multiple_BMXBMI <- lm(data$BMXBMI ~  (data$iqrMn) + 
+                        (data$iqrPb) +
+                        (data$iqrFl) +
+                        (data$iqrSe) + 
+                        (data$iqrHg) + 
+                        data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXBMI)
+round(confint(Multiple_BMXBMI), 2)
+```
+
+### Standing height
+```{r, results='hide', message=FALSE}
+Multiple_BMXHT <- lm(data$BMXHT ~  (data$iqrMn) + 
+                       (data$iqrPb) +
+                       (data$iqrFl) +
+                       (data$iqrSe) + 
+                       (data$iqrHg) +
+                       data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXHT)
+round(confint(Multiple_BMXHT),2)
+```
+
+### Waist circumference
+```{r, results='hide', message=FALSE}
+Multiple_BMXWAIST <- lm(data$BMXWAIST ~  (data$iqrMn) + 
+                          (data$iqrPb) +
+                          (data$iqrFl) +
+                          (data$iqrSe) + 
+                          (data$iqrHg) +
+                          data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXWAIST)
+round(confint(Multiple_BMXWAIST), 2)
+```
+
+### Upper arm length
+```{r, results='hide', message=FALSE}
+Multiple_BMXARML <- lm(data$BMXARML ~  (data$iqrMn) + 
+                         (data$iqrPb) +
+                         (data$iqrFl) +
+                         (data$iqrSe) + 
+                         (data$iqrHg) +
+                         data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXARML)
+round(confint(Multiple_BMXARML), 2)
+```
+
+## Mercury (Hg)
+
+### Body Mass Index
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXBMI <- lm(data$BMXBMI ~  (data$iqrHg) + 
+                        (data$iqrPb) +
+                        (data$iqrFl) +
+                        (data$iqrSe) + 
+                        (data$iqrMn) + 
+                        data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXBMI)
+round(confint(Multiple_BMXBMI), 2)
+```
+
+### Standing height
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXHT <- lm(data$BMXHT ~  (data$iqrHg) + 
+                       (data$iqrPb) +
+                       (data$iqrFl) +
+                       (data$iqrSe) + 
+                       (data$iqrMn) +
+                       data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXHT)
+round(confint(Multiple_BMXHT),2)
+```
+
+### Waist circumference
+
+```{r, results='hide', message=FALSE}
+Multiple_BMXWAIST <- lm(data$BMXWAIST ~  (data$iqrHg) + 
+                          (data$iqrPb) +
+                          (data$iqrFl) +
+                          (data$iqrSe) + 
+                          (data$iqrMn) +
+                          data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXWAIST)
+round(confint(Multiple_BMXWAIST), 2)
+```
+
+### Upper arm length
+```{r, results='hide', message=FALSE}
+Multiple_BMXARML <- lm(data$BMXARML ~  (data$iqrHg) + 
+                         (data$iqrPb) +
+                         (data$iqrFl) +
+                         (data$iqrSe) + 
+                         (data$iqrMn) +
+                         data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXARML)
+round(confint(Multiple_BMXARML), 2)
+```
+
+## Selenium (Se)
+
+### Body Mass Index
+```{r, results='hide', message=FALSE}
+Multiple_BMXBMI <- lm(data$BMXBMI ~  (data$iqrSe) + 
+                        (data$iqrPb) +
+                        (data$iqrFl) +
+                        (data$iqrHg) + 
+                        (data$iqrMn) + 
+                        data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXBMI)
+round(confint(Multiple_BMXBMI), 2)
+```
+
+### standing height
+```{r, results='hide', message=FALSE}
+Multiple_BMXHT <- lm(data$BMXHT ~  (data$iqrSe) + 
+                       (data$iqrPb) +
+                       (data$iqrFl) +
+                       (data$iqrHg) + 
+                       (data$iqrMn) +
+                       data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXHT)
+round(confint(Multiple_BMXHT),2)
+```
+
+### Waist circumference
+```{r, results='hide', message=FALSE}
+Multiple_BMXWAIST <- lm(data$BMXWAIST ~  (data$iqrSe) + 
+                          (data$iqrPb) +
+                          (data$iqrFl) +
+                          (data$iqrHg) + 
+                          (data$iqrMn) +
+                          data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXWAIST)
+round(confint(Multiple_BMXWAIST), 2)
+```
+
+### Upper arm length
+```{r, results='hide', message=FALSE}
+Multiple_BMXARML <- lm(data$BMXARML ~  (data$iqrSe) + 
+                         (data$iqrPb) +
+                         (data$iqrFl) +
+                         (data$iqrHg) + 
+                         (data$iqrMn) +
+                         data$calories + data$sex + data$INDFMPIR_ts + data$age + data$smoke + data$activityscore + data$sch_activityscore + data$race) 
+summary(Multiple_BMXARML)
+round(confint(Multiple_BMXARML), 2)
+```
